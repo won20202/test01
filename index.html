@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실버케어 커넥트 (SilverCare Connect)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f7fee7; /* 따뜻한 느낌의 연두/베이지 계열 */
+        }
+        /* 어르신을 위한 큰 글씨 모드 지원용 스타일 */
+        .large-text .text-sm { font-size: 1.125rem !important; line-height: 1.75rem; }
+        .large-text .text-base { font-size: 1.25rem !important; line-height: 2rem; }
+        .large-text .text-lg { font-size: 1.5rem !important; line-height: 2.25rem; }
+        .large-text .text-xl { font-size: 1.75rem !important; line-height: 2.5rem; }
+        .large-text .text-2xl { font-size: 2.25rem !important; line-height: 3rem; }
+        .large-text button { padding: 1rem 1.5rem !important; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col transition-all duration-300" id="appBody">
+
+    <!-- 상단 네비게이션 헤더 -->
+    <header class="bg-white border-b border-lime-100 shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-lime-500 text-white p-2.5 rounded-2xl flex items-center justify-center shadow-md shadow-lime-200">
+                    <i class="fa-solid fa-hands-holding-child text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-black text-slate-800 tracking-tight">실버케어 <span class="text-lime-600">커넥트</span></span>
+                    <span class="hidden sm:inline-block ml-2 text-xs bg-lime-100 text-lime-700 px-2 py-0.5 rounded-full font-semibold">어르신 안심 돌봄</span>
+                </div>
+            </div>
+
+            <!-- 어르신 맞춤형 편의 기능 컨트롤 -->
+            <div class="flex items-center space-x-3">
+                <!-- 글씨 크기 조절 버튼 -->
+                <button onclick="toggleFontSize()" id="fontSizeBtn" class="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition-colors">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    <span>큰 글씨 모드</span>
+                </button>
+
+                <!-- 긴급 SOS 버튼 (헤더 상시 노출) -->
+                <button onclick="triggerEmergency()" class="bg-red-500 hover:bg-red-600 active:scale-95 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center space-x-1.5 shadow-md shadow-red-200 animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>긴급 SOS</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 대시보드 영역 -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- 어르신 요약 프로필 카드 -->
+        <div class="bg-gradient-to-r from-lime-500 to-emerald-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-lime-900/10 mb-8 relative overflow-hidden">
+            <!-- 배경 데코레이션 문양 -->
+            <div class="absolute -right-10 -bottom-10 text-white/10 text-[150px] pointer-events-none">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                <div class="flex items-center space-x-5">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-2xl border-2 border-white/40 flex items-center justify-center text-4xl shadow-inner">
+                        👵
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-2xl sm:text-3xl font-extrabold" id="seniorName">김순이 어르신 (82세)</h1>
+                            <span class="bg-white/20 text-xs px-2.5 py-1 rounded-full border border-white/30">독거 안심 대상</span>
+                        </div>
+                        <p class="text-lime-100 mt-1 sm:text-lg flex items-center">
+                            <i class="fa-solid fa-location-dot mr-1.5 text-sm"></i> 부산광역시 남구 대연동 자택
+                        </p>
+                        <p class="text-emerald-100 text-xs sm:text-sm mt-0.5">최근 활동 감지: 15분 전 (거실 움직임 센서 작동)</p>
+                    </div>
+                </div>
+
+                <!-- 실시간 매칭 보호자 & 요양보호사 퀵 연락처 -->
+                <div class="flex flex-wrap gap-3">
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/15 flex items-center space-x-3">
+                        <div class="text-lime-200 text-lg"><i class="fa-solid fa-shield-heart"></i></div>
+                        <div>
+                            <p class="text-[10px] text-lime-200 uppercase tracking-wider font-semibold">지정 보호자 (아들)</p>
+                            <p class="text-sm font-bold" id="guardianInfo">박정민 (010-1234-5678)</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/15 flex items-center space-x-3">
+                        <div class="text-emerald-200 text-lg"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div>
+                            <p class="text-[10px] text-emerald-200 uppercase tracking-wider font-semibold">담당 요양보호사</p>
+                            <p class="text-sm font-bold">이영희복지사 (방문: 월/수/금)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3개 영역 메인 그리드 레이아웃 -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- 왼쪽: AI 말벗 및 일일 안부 체크 (Lg: 7칸) -->
+            <div class="lg:col-span-7 flex flex-col gap-6">
+                <!-- AI 안부 도우미 대화창 -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col h-[520px]">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-lime-100 text-lime-600 rounded-xl flex items-center justify-center text-lg font-bold">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800">AI 안부 도우미 '효돌이'</h2>
+                                <p class="text-xs text-slate-400">어르신의 말벗이 되어 드리고 건강 상태를 기록해요</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <span class="w-1.5 h-1.5 mr-1.5 bg-emerald-500 rounded-full animate-ping"></span> 실시간 분석중
+                        </span>
+                    </div>
+
+                    <!-- 대화 내용 영역 -->
+                    <div id="chatHistory" class="flex-grow overflow-y-auto space-y-4 pr-1 mb-4">
+                        <!-- 효돌이 첫 인사 -->
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-lime-100 text-lime-600 flex items-center justify-center text-sm font-bold shrink-0">🤖</div>
+                            <div class="bg-lime-50/80 text-slate-700 px-4 py-2.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm shadow-sm leading-relaxed">
+                                김순이 어르신, 안녕하세요! 😊 오늘 아침 식사는 맛있게 잘 드셨나요? 약은 거르지 않고 드셨는지 궁금해요.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 간편 응답 추천 태그 -->
+                    <div class="flex flex-wrap gap-2 mb-3" id="quickReplies">
+                        <button onclick="sendQuickReply('아침 든든하게 잘 먹었단다!')" class="bg-slate-50 hover:bg-lime-50 hover:text-lime-700 border border-slate-200 hover:border-lime-200 text-slate-600 text-xs px-3 py-2 rounded-full transition-all">
+                            🍚 아침 잘 먹었단다!
+                        </button>
+                        <button onclick="sendQuickReply('약도 잊지 않고 잘 챙겨 먹었어.')" class="bg-slate-50 hover:bg-lime-50 hover:text-lime-700 border border-slate-200 hover:border-lime-200 text-slate-600 text-xs px-3 py-2 rounded-full transition-all">
+                            💊 약 잘 챙겨 먹었어
+                        </button>
+                        <button onclick="sendQuickReply('오늘 몸이 찌뿌둥하고 힘이 없네..')" class="bg-slate-50 hover:bg-red-50 hover:text-red-700 border border-slate-200 hover:border-red-200 text-slate-600 text-xs px-3 py-2 rounded-full transition-all">
+                            😢 몸이 좀 찌뿌둥해
+                        </button>
+                        <button onclick="sendQuickReply('오늘 기분 아주 좋아! 맑구나.')" class="bg-slate-50 hover:bg-amber-50 hover:text-amber-700 border border-slate-200 hover:border-amber-200 text-slate-600 text-xs px-3 py-2 rounded-full transition-all">
+                            ☀️ 오늘 기분 좋아!
+                        </button>
+                    </div>
+
+                    <!-- 대화 입력창 -->
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="userInput" placeholder="효돌이에게 전할 말을 적어주세요... (예: 밥 먹었다)" onkeypress="handleKeyPress(event)" class="flex-grow bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-2xl px-4 py-3 text-sm">
+                        
+                        <!-- 음성 인식(시뮬레이션) 버튼 -->
+                        <button onclick="triggerVoiceSim()" title="음성 인식 시작" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-md shadow-amber-200 shrink-0">
+                            <i class="fa-solid fa-microphone text-lg"></i>
+                        </button>
+                        
+                        <!-- 전송 버튼 -->
+                        <button onclick="sendMessage()" class="bg-lime-500 hover:bg-lime-600 active:scale-95 text-white w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-md shadow-lime-200 shrink-0">
+                            <i class="fa-solid fa-paper-plane text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽: 라이브 센서, 투약/스케줄, 돌봄 리포트 (Lg: 5칸) -->
+            <div class="lg:col-span-5 flex flex-col gap-6">
+                
+                <!-- 1. 스마트 홈 라이브 안전 센서 (IoT 시뮬레이션) -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-house-signal text-lime-600 mr-2"></i> 스마트 안전 센서 상태
+                        </h3>
+                        <span class="text-xs text-lime-600 font-bold bg-lime-50 px-2 py-1 rounded-lg">정상 작동중</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- 움직임 감지 센서 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-person-walking"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-semibold">움직임 센서</p>
+                                <p class="text-sm font-bold text-slate-700" id="sensorMotion">최근 활동 감지</p>
+                            </div>
+                        </div>
+
+                        <!-- 냉장고 문 열림 센서 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-door-closed"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-semibold">냉장고 센서</p>
+                                <p class="text-sm font-bold text-slate-700" id="sensorFridge">오늘 4회 개폐</p>
+                            </div>
+                        </div>
+
+                        <!-- 가스 차단기 센서 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-fire-burner"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-semibold">가스 밸브</p>
+                                <p class="text-sm font-bold text-slate-700" id="sensorGas">안전하게 차단됨</p>
+                            </div>
+                        </div>
+
+                        <!-- 실내 온도/습도 -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg">
+                                <i class="fa-solid fa-temperature-half"></i>
+                            </div>
+                            <div>
+                                <p class="text-[11px] text-slate-400 font-semibold">실내 기온</p>
+                                <p class="text-sm font-bold text-slate-700">24.5°C / 쾌적</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 오늘 먹어야 할 약 (투약 체크리스트) -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-pills text-rose-500 mr-2"></i> 오늘 복용할 약 리스트
+                        </h3>
+                        <span class="text-xs text-rose-500 bg-rose-50 px-2.5 py-1 rounded-full font-bold" id="pillCount">남은 약 2정</span>
+                    </div>
+
+                    <div class="space-y-3" id="pillList">
+                        <!-- 혈압약 -->
+                        <div class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <button onclick="togglePill(this)" class="w-6 h-6 rounded-full border-2 border-slate-300 text-white flex items-center justify-center focus:outline-none transition-all">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                </button>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">아침 고혈압약</p>
+                                    <p class="text-xs text-slate-400">아침 식사 후 30분 복용</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-amber-600 bg-amber-50 font-bold px-2 py-0.5 rounded-md">오전 08:30</span>
+                        </div>
+
+                        <!-- 관절염약 -->
+                        <div class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <button onclick="togglePill(this)" class="w-6 h-6 rounded-full border-2 border-slate-300 text-white flex items-center justify-center focus:outline-none transition-all">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                </button>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">점심 관절 통증약</p>
+                                    <p class="text-xs text-slate-400">점심 식사 직후 복용</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-amber-600 bg-amber-50 font-bold px-2 py-0.5 rounded-md">오후 01:00</span>
+                        </div>
+
+                        <!-- 취침전 안구건조약 -->
+                        <div class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100 rounded-2xl border border-slate-100 transition-colors">
+                            <div class="flex items-center space-x-3">
+                                <button onclick="togglePill(this)" class="w-6 h-6 rounded-full border-2 border-slate-300 text-white flex items-center justify-center focus:outline-none transition-all">
+                                    <i class="fa-solid fa-check text-xs"></i>
+                                </button>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-700">취침 전 안구 윤활제</p>
+                                    <p class="text-xs text-slate-400">자기 전 한 방울 주입</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-amber-600 bg-amber-50 font-bold px-2 py-0.5 rounded-md">오후 09:30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 실시간 돌봄 공유 일지 (보호자용 리포트) -->
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center">
+                            <i class="fa-solid fa-clipboard-user text-indigo-500 mr-2"></i> 실시간 돌봄 공유 일지
+                        </h3>
+                        <button onclick="addNewLogPrompt()" class="text-xs text-indigo-600 hover:text-indigo-700 font-bold">
+                            <i class="fa-solid fa-plus mr-1"></i>기록 작성
+                        </button>
+                    </div>
+
+                    <!-- 타임라인 형태의 일지 리스트 -->
+                    <div class="relative pl-6 border-l border-indigo-100 space-y-6" id="careLogTimeline">
+                        <!-- 최근 기록 -->
+                        <div class="relative">
+                            <!-- 타임라인 포인트 아이콘 -->
+                            <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-indigo-500 shadow-sm"></div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-bold text-indigo-600">오늘 오전 10:30</span>
+                                    <span class="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded-full font-semibold">이영희 요양사</span>
+                                </div>
+                                <p class="text-sm font-semibold text-slate-700 mt-1">방문 안부 및 집안 청소 완료</p>
+                                <p class="text-xs text-slate-400 mt-0.5">"점심 식사 반찬으로 소고기 미역국 조리해드렸습니다. 식욕도 좋으시고 기분도 밝으십니다."</p>
+                            </div>
+                        </div>
+
+                        <!-- 어제 기록 -->
+                        <div class="relative">
+                            <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-slate-300 shadow-sm"></div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-bold text-slate-500">어제 오후 03:00</span>
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full font-semibold">시스템 분석</span>
+                                </div>
+                                <p class="text-sm font-semibold text-slate-700 mt-1">건강 안부 자가 통보 완료</p>
+                                <p class="text-xs text-slate-400 mt-0.5">"약 먹었고 무릎이 조금 아프지만 밥은 잘 드셨다고 AI 효돌이와 대화 기록됨."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- 긴급 상황 모달 알림창 (기본값 숨김) -->
+    <div id="emergencyModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white rounded-[32px] max-w-md w-full p-8 border-4 border-red-500 shadow-2xl text-center animate-bounce">
+            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+                <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
+            </div>
+            <h3 class="text-2xl font-black text-slate-800 mb-2">🚨 긴급 경보 (SOS) 작동됨</h3>
+            <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                김순이 어르신 댁에 위급한 상황이 발생했을 수 있습니다.<br>
+                <strong>보호자(박정민)</strong> 및 <strong>119 구조대</strong>에 실시간 위치와 경보가 즉시 송신됩니다.
+            </p>
+            <div class="bg-red-50 text-red-800 p-4 rounded-2xl mb-6 text-left">
+                <p class="text-xs font-bold uppercase tracking-wide text-red-500">전송 내용</p>
+                <p class="text-sm font-bold mt-1">[실버케어 커넥트 비상 상황]</p>
+                <p class="text-xs mt-0.5">김순이 어르신 댁 긴급 신호 감지. 위치: 남구 대연동 자택.</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="cancelEmergency()" class="flex-grow bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-4 rounded-2xl transition-all">
+                    오작동 (경보 해제)
+                </button>
+                <a href="tel:119" class="flex-grow bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-2xl transition-all shadow-lg shadow-red-200 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>119 즉시 통화</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 푸터 푸터 -->
+    <footer class="bg-white border-t border-lime-100 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
+            <p class="font-bold text-slate-600">© 2026 실버케어 커넥트 (SilverCare Connect). All rights reserved.</p>
+            <p class="mt-1">보건복지부 안심 돌봄 가이드 및 독거 어르신 응급안전안심서비스 기술 표준 가이드를 시뮬레이션으로 준수합니다.</p>
+        </div>
+    </footer>
+
+    <!-- 자바스크립트 비즈니스 로직 -->
+    <script>
+        // 기본 어르신 및 대화 데이터 설정
+        let isLargeText = false;
+        let leftPillsCount = 3;
+
+        // 대화 시나리오 흐름 제어용 변수
+        let chatStep = 0; 
+
+        // 1. 큰 글씨 모드 스위칭
+        function toggleFontSize() {
+            const body = document.getElementById('appBody');
+            const btn = document.getElementById('fontSizeBtn');
+            isLargeText = !isLargeText;
+            
+            if (isLargeText) {
+                body.classList.add('large-text');
+                btn.innerHTML = `<i class="fa-solid fa-magnifying-glass-minus"></i> <span>보통 글씨</span>`;
+                btn.classList.replace('bg-slate-100', 'bg-lime-100');
+                btn.classList.replace('text-slate-700', 'text-lime-700');
+            } else {
+                body.classList.remove('large-text');
+                btn.innerHTML = `<i class="fa-solid fa-magnifying-glass-plus"></i> <span>큰 글씨 모드</span>`;
+                btn.classList.replace('bg-lime-100', 'bg-slate-100');
+                btn.classList.replace('text-lime-700', 'text-slate-700');
+            }
+        }
+
+        // 2. 메시지 수동 발송
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            appendUserMessage(message);
+            input.value = '';
+
+            // AI 지능형 시뮬레이션 응답 트리거
+            setTimeout(() => {
+                respondToUser(message);
+            }, 800);
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 3. 간편 답변 버튼 선택 시
+        function sendQuickReply(text) {
+            appendUserMessage(text);
+            setTimeout(() => {
+                respondToUser(text);
+            }, 850);
+        }
+
+        // 화면에 유저 메시지 추가
+        function appendUserMessage(text) {
+            const history = document.getElementById('chatHistory');
+            const userBubble = `
+                <div class="flex items-start space-x-3 justify-end">
+                    <div class="bg-lime-500 text-white px-4 py-2.5 rounded-2xl rounded-tr-none max-w-[85%] text-sm shadow-sm leading-relaxed">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            history.insertAdjacentHTML('beforeend', userBubble);
+            scrollChatToBottom();
+        }
+
+        // 화면에 AI 메시지 추가
+        function appendAiMessage(text) {
+            const history = document.getElementById('chatHistory');
+            const aiBubble = `
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-lime-100 text-lime-600 flex items-center justify-center text-sm font-bold shrink-0">🤖</div>
+                    <div class="bg-lime-50/80 text-slate-700 px-4 py-2.5 rounded-2xl rounded-tl-none max-w-[85%] text-sm shadow-sm leading-relaxed">
+                        ${text}
+                    </div>
+                </div>
+            `;
+            history.insertAdjacentHTML('beforeend', aiBubble);
+            scrollChatToBottom();
+        }
+
+        // 간단한 규칙 기반 키워드 매칭 반응 시뮬레이션 (어르신의 친화적 언어 분석)
+        function respondToUser(userText) {
+            let reply = "";
+
+            if (userText.includes('밥') || userText.includes('먹었') || userText.includes('식사')) {
+                reply = "든든하게 챙겨 드셨다니 마음이 정말 놓이네요! 역시 건강을 위해서는 삼시 세끼 따뜻하게 식사하시는 게 최고예요. 🍚 소화 잘 되게 조금 가볍게 움직이시는 것도 추천드려요!";
+                // 센서 상태 실시간 업데이트 반영
+                document.getElementById('sensorFridge').innerHTML = "오늘 5회 개폐 (정상 식사)";
+                addSystemLog("오늘의 자가 식사 기록 확인 및 체크");
+            } else if (userText.includes('약') || userText.includes('먹었어') || userText.includes('챙겨')) {
+                reply = "약도 제시간에 똑 부러지게 챙겨 드셨군요! 💊 어르신의 꼼꼼한 약 복용 습관 덕분에 건강이 늘 잘 유지되시는 것 같아요. 자랑스럽습니다!";
+                // 첫번째 투약 리스트 자동 체크 시뮬레이션
+                const firstPillBtn = document.querySelector('#pillList button');
+                if (firstPillBtn && !firstPillBtn.classList.contains('bg-emerald-500')) {
+                    togglePill(firstPillBtn);
+                }
+            } else if (userText.includes('아프') || userText.includes('힘이') || userText.includes('찌뿌둥')) {
+                reply = "에고, 오늘 몸이 찌뿌둥하고 아프셔서 어쩌죠.. 😢 걱정돼요. 무리한 움직임은 쉬어주시고, 계속 힘드시면 보호자님이나 저희 센터 복지사님께 연락드려 드릴까요? 따뜻한 물 한잔 꼭 드세요.";
+                // 보호자 및 시스템 일지 자동 보고
+                addSystemLog("어르신의 컨디션 다소 불량 보고 접수됨");
+            } else if (userText.includes('기분') || userText.includes('좋아') || userText.includes('맑')) {
+                reply = "날씨만큼이나 어르신 기분이 좋다니 효돌이도 엉덩이가 춤을 추듯 기뻐요! ☀️ 기분 좋은 에너지를 가득 담아서 오늘도 행복한 하루 보내세요. 제가 항상 함께할게요!";
+            } else {
+                reply = "어르신의 말씀을 귀담아 들었습니다. 💖 오늘도 어르신의 하루가 볕뜰날처럼 화사하고 평안하도록 효돌이와 센터가 곁에서 열심히 안심 돌봄을 다하겠습니다!";
+            }
+
+            appendAiMessage(reply);
+        }
+
+        function scrollChatToBottom() {
+            const history = document.getElementById('chatHistory');
+            history.scrollTop = history.scrollHeight;
+        }
+
+        // 4. 음성 인식 시뮬레이션 기능 (어르신들의 쉬운 말하기를 유도)
+        function triggerVoiceSim() {
+            appendAiMessage("🎤 음성 인식을 시작했습니다. 말씀해 보세요... (시뮬레이션 가동)");
+            
+            // 2.5초 뒤 어르신 음성이 들어온 것처럼 시뮬레이션
+            setTimeout(() => {
+                const simulatedSpeech = "어이 효돌이, 나 혈압약 방금 아침 먹고 잘 챙겨 먹었다~";
+                appendUserMessage("🎙️ " + simulatedSpeech);
+                
+                setTimeout(() => {
+                    respondToUser(simulatedSpeech);
+                }, 1000);
+            }, 2500);
+        }
+
+        // 5. 투약 관리 토글 체크 기능
+        function togglePill(button) {
+            const pillContainer = button.parentElement.parentElement;
+            const textSpan = pillContainer.querySelector('p.text-sm');
+            const descSpan = pillContainer.querySelector('p.text-xs');
+
+            if (!button.classList.contains('bg-emerald-500')) {
+                // 약 복용 완료 상태로 변경
+                button.classList.remove('border-slate-300');
+                button.classList.add('bg-emerald-500', 'border-emerald-500');
+                textSpan.classList.add('line-through', 'text-slate-400');
+                descSpan.innerHTML = "복용 완료 시각: 방금 전";
+                
+                leftPillsCount = Math.max(0, leftPillsCount - 1);
+                addSystemLog(`${textSpan.innerText} 복용 체크 완료`);
+            } else {
+                // 약 안 먹음 상태로 되돌리기
+                button.classList.add('border-slate-300');
+                button.classList.remove('bg-emerald-500', 'border-emerald-500');
+                textSpan.classList.remove('line-through', 'text-slate-400');
+                descSpan.innerHTML = "복용 필요 상태";
+                
+                leftPillsCount = Math.min(3, leftPillsCount + 1);
+            }
+
+            // 개수 업데이트
+            document.getElementById('pillCount').innerText = leftPillsCount === 0 ? "모두 복용함 🎉" : `남은 약 ${leftPillsCount}정`;
+        }
+
+        // 6. 긴급 경보 (SOS) 발생 트리거
+        function triggerEmergency() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.remove('hidden');
+            
+            // 백그라운드에 시각적 경보 비프 효과 부여
+            document.body.classList.add('animate-pulse');
+            
+            // 디버그/체크용 로그 추가
+            addSystemLog("⚠️ [긴급 경보] 어르신 긴급 SOS 비상 버튼 작동");
+        }
+
+        // 긴급 경보 취소
+        function cancelEmergency() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.add('hidden');
+            document.body.classList.remove('animate-pulse');
+            addSystemLog("✅ [긴급 해제] 긴급 오작동 경보 복귀 완료");
+        }
+
+        // 7. 실시간 공유 일지에 시스템 로그 추가 기능
+        function addSystemLog(activityText) {
+            const timeline = document.getElementById('careLogTimeline');
+            const now = new Date();
+            const timeStr = `오늘 ${now.getHours() >= 12 ? '오후' : '오전'} ${String(now.getHours() % 12 || 12).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            const newLogHtml = `
+                <div class="relative animate-fade-in-down">
+                    <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-lime-500 shadow-sm"></div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-lime-600">${timeStr}</span>
+                            <span class="text-[10px] bg-lime-50 text-lime-700 px-1.5 py-0.2 rounded-full font-semibold">자동 연동</span>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-700 mt-1">${activityText}</p>
+                    </div>
+                </div>
+            `;
+            timeline.insertAdjacentHTML('afterbegin', newLogHtml);
+        }
+
+        // 수동 방문 기록 팝업 작성 시뮬레이션
+        function addNewLogPrompt() {
+            const content = prompt("요양보호사/보호자가 어르신의 특이사항을 직접 기록합니다. 내용을 입력해 주세요:");
+            if (content) {
+                const timeline = document.getElementById('careLogTimeline');
+                const now = new Date();
+                const timeStr = `오늘 ${now.getHours() >= 12 ? '오후' : '오전'} ${String(now.getHours() % 12 || 12).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                
+                const newLogHtml = `
+                    <div class="relative">
+                        <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-indigo-500 shadow-sm"></div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-indigo-600">${timeStr}</span>
+                                <span class="text-[10px] bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded-full font-semibold">방문 보호자</span>
+                            </div>
+                            <p class="text-sm font-semibold text-slate-700 mt-1">현장 안부 직접 기록</p>
+                            <p class="text-xs text-slate-400 mt-0.5">"${content}"</p>
+                        </div>
+                    </div>
+                `;
+                timeline.insertAdjacentHTML('afterbegin', newLogHtml);
+            }
+        }
+
+        // 주기적인 스마트 센서 라이브 체킹 시뮬레이션 효과
+        setInterval(() => {
+            const rand = Math.random();
+            const motionEl = document.getElementById('sensorMotion');
+            if (rand > 0.6) {
+                motionEl.innerHTML = "방금 거실 움직임 감지";
+                motionEl.parentElement.parentElement.classList.add('bg-emerald-50');
+                setTimeout(() => {
+                    motionEl.parentElement.parentElement.classList.remove('bg-emerald-50');
+                }, 1000);
+            }
+        }, 8000);
+    </script>
+</body>
+</html>
